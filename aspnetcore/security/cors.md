@@ -19,58 +19,58 @@ ms.locfileid: "58210127"
 
 本文介绍如何在 ASP.NET Core 应用中启用 CORS。
 
-浏览器安全性以防止网页从发出请求到不同的域的 web 页面提供服务。 此限制称为*同域策略*。 同域策略可阻止恶意站点读取另一个站点中的敏感数据。 有时，你可能想要允许其他站点对您的应用程序进行跨域请求。 有关详细信息，请参阅[Mozilla CORS 文章](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)。
+浏览器安全性阻止网页发出请求到不同的域的 web 页面以提供服务。 此限制称为*同域策略*。 同域策略可阻止恶意站点读取另一个站点中的敏感数据。 有时，你可能想要允许其他站点对您的应用程序进行跨域请求。 有关详细信息，请参阅[Mozilla CORS 文章](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)。
 
 [跨源资源共享](https://www.w3.org/TR/cors/)(CORS):
 
 * 是一项 W3C 标准，让服务器放宽同域策略。
-* 是**不**一项安全功能，CORS 放松了安全性。 通过允许 CORS API 不更安全。 有关详细信息，请参阅[如何 CORS 工作](#how-cors)。
-* 允许显式允许某些跨域请求，同时拒绝另一个服务器。
-* 如是更安全、 更灵活早期技术相比[JSONP](/dotnet/framework/wcf/samples/jsonp)。
+* **不**是一项安全功能，CORS 降低了安全性。 允许 CORS 会使得API 更不安全。 有关详细信息，请参阅[ CORS 如何工作](#how-cors)。
+* 显式允许某些跨域请求的同时，拒绝其他的一些服务器。
+* 比早期技术更安全、 更灵活，例如[JSONP](/dotnet/framework/wcf/samples/jsonp)。
 
 [查看或下载示例代码](https://github.com/aspnet/Docs/tree/master/aspnetcore/tutorials/razor-pages/razor-pages-start/2.2-stage-samples)（[如何下载](xref:index#how-to-download-a-sample)）
 
-## <a name="same-origin"></a>相同的原点
+## <a name="same-origin"></a>相同的来源
 
-如果它们具有相同方案、 主机和端口，两个 Url 将具有相同的原点 ([RFC 6454](https://tools.ietf.org/html/rfc6454))。
+如果它们具有相同方案、 主机和端口，两个 Url 将具有相同的来源 ([RFC 6454](https://tools.ietf.org/html/rfc6454))。
 
-以下两个 Url 具有相同的原点：
+以下两个 Url 具有相同的来源：
 
 * `https://example.com/foo.html`
 * `https://example.com/bar.html`
 
-这些 Url 具有不同的源，比以前的两个 Url:
+这些 Url 具有不同的源，比上述的两个 Url:
 
 * `https://example.net` &ndash; 不同的域
 * `https://www.example.com/foo.html` &ndash; 不同的子域
 * `http://example.com/foo.html` &ndash; 不同的方案
 * `https://example.com:9000/foo.html` &ndash; 不同的端口
 
-比较来源时，Internet Explorer 不会考虑该端口。
+比较来源时，Internet Explorer 不会考虑端口。
 
 ## <a name="cors-with-named-policy-and-middleware"></a>使用命名的策略和中间件的 CORS
 
-CORS 中间件处理跨域请求。 下面的代码指定原点整个应用启用 CORS:
+CORS 中间件处理跨域请求。 下面的代码让整个应用对指定来源启用 CORS:
 
 [!code-csharp[](cors/sample/Cors/WebAPI/Startup.cs?name=snippet&highlight=8,14-23,38)]
 
 前面的代码：
 
 * 策略名称设置为"\_myAllowSpecificOrigins"。 策略名称是任意的。
-* 调用<xref:Microsoft.AspNetCore.Builder.CorsMiddlewareExtensions.UseCors*>扩展方法，使内核。
+* 调用<xref:Microsoft.AspNetCore.Builder.CorsMiddlewareExtensions.UseCors*>扩展方法，使内核可用。
 * 调用<xref:Microsoft.Extensions.DependencyInjection.CorsServiceCollectionExtensions.AddCors*>与[lambda 表达式](/dotnet/csharp/programming-guide/statements-expressions-operators/lambda-expressions)。 Lambda 采用<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder>对象。 [配置选项](#cors-policy-options)，如`WithOrigins`，本文稍后介绍。
 
 <xref:Microsoft.Extensions.DependencyInjection.MvcCorsMvcCoreBuilderExtensions.AddCors*>方法调用将 CORS 服务添加到应用程序的服务容器：
 
 [!code-csharp[](cors/sample/Cors/WebAPI/Startup.cs?name=snippet2)]
 
-有关详细信息，请参阅[CORS 策略选项](#cpo)本文档中。
+有关详细信息，请参阅本文档中[CORS 策略选项](#cpo)。
 
-<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder>方法可以将链接的方法，如下面的代码中所示：
+<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder>方法可以链接方法，如下面的代码中所示：
 
 [!code-csharp[](cors/sample/Cors/WebAPI/Startup2.cs?name=snippet2)]
 
-以下突出显示的代码适用于所有应用程序终结点通过 CORS 中间件的 CORS 策略：
+以下突出显示的代码将使得 CORS 策略应用于所有应用程序终端通过 CORS 中间件：
 
 ```csharp
 public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -96,7 +96,7 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 注意:
 
 * `UseCors` 必须在`UseMvc` 之前调用。
-* URL 必须**不**包含尾部反斜杠 (`/`)。 如果 URL 以终止`/`，则比较操作返回`false`并返回无标头。
+* URL 必须**不**包含尾部反斜杠 (`/`)。 如果 URL 以`/`终止，则比较操作返回`false`并返回无标头。
 
 请参阅[测试 CORS](#test)有关测试前面的代码中的说明。
 
@@ -104,9 +104,9 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 
 ## <a name="enable-cors-with-attributes"></a>使用属性启用 CORS
 
-[ &lbrack;EnableCors&rbrack; ](xref:Microsoft.AspNetCore.Cors.EnableCorsAttribute)属性提供了一种全局应用 CORS 的替代方法。 `[EnableCors]`属性为所选的终结点，而不是所有终结点启用 CORS。
+[ &lbrack;EnableCors&rbrack; ](xref:Microsoft.AspNetCore.Cors.EnableCorsAttribute)属性提供了一种全局应用 CORS 的替代方法。 `[EnableCors]`属性为所选的终端，而不是所有终端启用 CORS。
 
-使用`[EnableCors]`可以指定的默认策略和`[EnableCors("{Policy String}")]`指定策略。
+使用`[EnableCors]`可以指定默认策略，而`[EnableCors("{Policy String}")]`可以指定特定策略。
 
 `[EnableCors]`特性可以应用于：
 
@@ -114,19 +114,19 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 * 控制器
 * 控制器操作方法
 
-可以将不同的策略应用于控制器/页的模型/操作与`[EnableCors]`属性。 当`[EnableCors]`特性应用到控制器/页的模型/操作方法和中间件中启用了 CORS，这两个策略的应用。 我们建议不要合并策略。 使用`[EnableCors]`属性或中间件，不能同时在同一应用中。
+`[EnableCors]`属性可以将不同的策略应用于Controller/page-model/action。 当`[EnableCors]`特性应用到Controller/page-model/action，而且中间件中启用了 CORS，这些策略都会得到应用。 我们建议不要合并策略。 不能同时在同一应用中使用`[EnableCors]`属性或中间件，。
 
 下面的代码将不同的策略应用到每个方法：
 
 [!code-csharp[](cors/sample/Cors/WebAPI/Controllers/WidgetController.cs?name=snippet&highlight=6,14)]
 
-以下代码将创建一个 CORS 默认策略和一个名为策略`"AnotherPolicy"`:
+以下代码将创建一个 CORS 默认策略和一个名为`"AnotherPolicy"`的策略:
 
 [!code-csharp[](cors/sample/Cors/WebAPI/StartupMultiPolicy.cs?name=snippet&highlight=12-28)]
 
 ### <a name="disable-cors"></a>禁用 CORS
 
-[ &lbrack;DisableCors&rbrack; ](xref:Microsoft.AspNetCore.Cors.DisableCorsAttribute)属性控制器/页的模型/操作禁用 CORS。
+[ &lbrack;DisableCors&rbrack; ](xref:Microsoft.AspNetCore.Cors.DisableCorsAttribute)属性让控制器/页的模型/操作禁用 CORS。
 
 <a name="cpo"></a>
 
@@ -141,23 +141,23 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 * [跨域请求中的凭据](#credentials-in-cross-origin-requests)
 * [将预检过期时间设置](#set-the-preflight-expiration-time)
 
-<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions.AddPolicy*> 在中称为`Startup.ConfigureServices`。 有关一些选项，可能会有帮助读取[如何 CORS 工作](#how-cors)部分第一次。
+<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions.AddPolicy*> 在`Startup.ConfigureServices`被调用。 有关一些选项，阅读[ CORS 如何工作](#how-cors)可能会有帮助。
 
 ## <a name="set-the-allowed-origins"></a>设置允许的来源
 
-<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder.AllowAnyOrigin*> &ndash; 允许来自任何方案使用所有来源的 CORS 请求 (`http`或`https`)。 `AllowAnyOrigin` 不安全，因为*的任何网站*可以对应用进行跨域请求。
+<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder.AllowAnyOrigin*> &ndash; 允许来自所有来源的使用任何方案(`http`或`https`)的 CORS 请求 。 `AllowAnyOrigin` 不安全，因为*任何网站*都可以对应用进行跨域请求。
 
 ::: moniker range=">= aspnetcore-2.2"
 
 > [!NOTE]
-> 指定`AllowAnyOrigin`和`AllowCredentials`是不安全的配置，可能会导致跨站点请求伪造。 使用这两种方法配置应用程序时，CORS 服务返回了无效的 CORS 响应。
+> 指定`AllowAnyOrigin`和`AllowCredentials`是不安全的配置，可能会导致跨站点请求伪造。 同时使用这两种方法配置应用程序时，CORS 服务将返回无效的 CORS 响应。
 
 ::: moniker-end
 
 ::: moniker range="< aspnetcore-2.2"
 
 > [!NOTE]
-> 指定`AllowAnyOrigin`和`AllowCredentials`是不安全的配置，可能会导致跨站点请求伪造。 有关安全的应用程序，如果客户端必须先授权本身访问服务器资源指定确切的来源列表。
+> 指定`AllowAnyOrigin`和`AllowCredentials`是一个不安全的配置，可能会导致跨站点请求伪造。 有关安全的应用程序，如果客户端必须先授权本身访问服务器资源指定确切的来源列表。
 
 ::: moniker-end
 
@@ -174,7 +174,7 @@ to remove the ambiguous **This**.
 
 ::: moniker range=">= aspnetcore-2.0"
 
-<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder.SetIsOriginAllowedToAllowWildcardSubdomains*> &ndash; 集<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy.IsOriginAllowed*>策略允许来源以匹配配置的通配符域，如果允许原点在评估时的函数的属性。
+<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder.SetIsOriginAllowedToAllowWildcardSubdomains*> &ndash; 设置策略的<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy.IsOriginAllowed*>属性，以评估是否通过一个匹配配置的通配域的来源。
 
 [!code-csharp[](cors/sample/CorsExample4/Startup.cs?range=100-104&highlight=4)]
 
@@ -203,7 +203,7 @@ to remove the ambiguous **This**.
 
 CORS 中间件策略匹配所指定的特定标头`WithHeaders`时，才可以发送标头`Access-Control-Request-Headers`与中所述的标头完全匹配`WithHeaders`。
 
-例如，假设配置，如下所示的应用：
+例如，假设某应用配置如下：
 
 ```csharp
 app.UseCors(policy => policy.WithHeaders(HeaderNames.CacheControl));
@@ -244,7 +244,7 @@ Access-Control-Request-Headers: Cache-Control, Content-Language
 
 ### <a name="set-the-exposed-response-headers"></a>设置公开的响应标头
 
-默认情况下，在浏览器不会公开所有向应用程序的响应标头。 有关详细信息，请参阅[W3C 跨域资源共享 （术语）：简单的响应标头](https://www.w3.org/TR/cors/#simple-response-header)。
+默认情况下，浏览器不会向应用程序公开所有的响应标头。 有关详细信息，请参阅[W3C 跨域资源共享 （术语）：简单的响应标头](https://www.w3.org/TR/cors/#simple-response-header)。
 
 默认情况下可用的响应标头是：
 
@@ -255,13 +255,13 @@ Access-Control-Request-Headers: Cache-Control, Content-Language
 * `Last-Modified`
 * `Pragma`
 
-CORS 规范调用这些标头*简单响应标头*。 若要使其他标头可用于应用程序，请调用<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder.WithExposedHeaders*>:
+CORS 规范称呼这些标头为*简单响应标头*。 若要使其他标头可用于应用程序，请调用<xref:Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder.WithExposedHeaders*>:
 
 [!code-csharp[](cors/sample/CorsExample4/Startup.cs?range=73-78&highlight=5)]
 
 ### <a name="credentials-in-cross-origin-requests"></a>跨域请求中的凭据
 
-凭据要求特殊处理 CORS 请求中。 默认情况下，在浏览器不会发送与跨域请求的凭据。 凭据包括 cookie 和 HTTP 身份验证方案。 若要将发送具有跨源请求的凭据，客户端必须设置`XMLHttpRequest.withCredentials`到`true`。
+在一个 CORS 请求中，凭据要求特殊处理。 默认情况下，在浏览器不会发送跨域请求的凭据。 凭据包括 cookie 和 HTTP 身份验证方案。 若要将发送具有跨源请求的凭据，客户端必须设置`XMLHttpRequest.withCredentials`为`true`。
 
 使用`XMLHttpRequest`直接：
 
@@ -283,7 +283,7 @@ $.ajax({
 });
 ```
 
-使用[提取 API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API):
+使用[Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API):
 
 ```javascript
 fetch('https://www.example.com/api/test', {
@@ -295,27 +295,27 @@ fetch('https://www.example.com/api/test', {
 
 [!code-csharp[](cors/sample/CorsExample4/Startup.cs?range=82-87&highlight=5)]
 
-HTTP 响应包括`Access-Control-Allow-Credentials`标头，服务器允许跨域请求凭据将告诉浏览器。
+HTTP 响应包括`Access-Control-Allow-Credentials`标头，这会告诉浏览器，服务器允许跨域请求凭据。
 
-如果浏览器发送凭据，但响应不包含有效`Access-Control-Allow-Credentials`标头，在浏览器不会公开的响应应用程序中，并且跨域请求失败。
+如果浏览器发送凭据，但响应不包含有效`Access-Control-Allow-Credentials`标头，则浏览器不会对应用程序公开响应，跨域请求失败。
 
-允许跨域凭据会安全风险。 在另一个域的网站可以向应用而无需在用户不知情的用户的名义发送登录的用户的凭据。 <!-- TODO Review: When using `AllowCredentials`, all CORS enabled domains must be trusted.
+允许跨域凭据是一个安全风险。 在另一个域的网站可以在用户不知情的情况下以的用户的名义发送已登录用户的凭据。 <!-- TODO Review: When using `AllowCredentials`, all CORS enabled domains must be trusted.
 I don't like "all CORS enabled domains must be trusted", because it implies that if you're not using  `AllowCredentials`, domains don't need to be trusted. -->
 
-CORS 规范还会说明该设置到来源`"*"`（所有来源） 是无效的如果`Access-Control-Allow-Credentials`标头。
+CORS 规范同时声明设置来源为`"*"`（允许所有来源） 是无效的，如果设置了`Access-Control-Allow-Credentials`标头的话。
 
 ### <a name="preflight-requests"></a>预检请求
 
-对于某些 CORS 请求，在浏览器发出实际请求之前发送其他请求。 调用此请求*预检请求*。 在浏览器可以跳过预检请求，如果满足以下条件：
+对于某些 CORS 请求，在浏览器发出实际请求之前发送额外请求。 此请求称为*预检请求*。 如果满足以下条件，则浏览器可以跳过预检请求：
 
 * 请求方法是 GET、 HEAD 或 POST。
-* 应用程序不会设置以外的其他请求标头`Accept`， `Accept-Language`， `Content-Language`， `Content-Type`，或`Last-Event-ID`。
-* `Content-Type`标头，如果设置，具有以下值之一：
+* 应用程序没有设置`Accept`， `Accept-Language`， `Content-Language`， `Content-Type`，或`Last-Event-ID`以外的其他请求标头。
+* `Content-Type`标头，如果设置了，具有以下值之一：
   * `application/x-www-form-urlencoded`
   * `multipart/form-data`
   * `text/plain`
 
-在请求标头的规则集的客户端请求适用于通过调用来设置应用程序的标头`setRequestHeader`上`XMLHttpRequest`对象。 CORS 规范调用这些标头*创作请求标头*。 该规则不能应用于标头设置可以在浏览器，如`User-Agent`， `Host`，或`Content-Length`。
+在请求标头的规则集的客户端请求适用于通过调用来设置应用程序的标头`setRequestHeader`上`XMLHttpRequest`对象。 CORS 规范称呼这些标头为*创作请求标头*。 该规则不能应用于标头设置可以在浏览器，如`User-Agent`， `Host`，或`Content-Length`。
 
 下面是预检请求的示例：
 
